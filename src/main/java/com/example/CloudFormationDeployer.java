@@ -7,7 +7,8 @@ import java.nio.file.Paths;
 
 public class CloudFormationDeployer {
     
-    private static final String TEMPLATE_PATH = "src/main/resources/iam-template.yml";
+    // Updated path to the moved template
+    private static final String TEMPLATE_PATH = "src/main/resources/cloudformation/iam-template.yml";
     private static String stackName;
 
     public static void main(String[] args) {
