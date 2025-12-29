@@ -79,10 +79,10 @@ tasks.register('deleteStack', JavaExec) {
     description = 'Deletes CloudFormation stack'
 
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = application.mainClass
-
-    args = [
-        project.findProperty('stackName') ?: 'sample-iam-stack',
-        'delete'
-    ]
+    mainClass = 'com.example.CloudFormationDeployer'
+    if (project.hasProperty('stackName')) {
+        args = [project.property('stackName'), 'delete']
+    } else {
+        args = ['sample-iam-stack', 'delete']
+    }
 }
