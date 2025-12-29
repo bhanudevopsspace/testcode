@@ -7,7 +7,8 @@ import java.nio.file.Paths;
 
 public class CloudFormationDeployer {
     
-    private static final String TEMPLATE_PATH = "src/main/resources/iam-template.yml";
+    // Updated path to the moved template
+    private static final String TEMPLATE_PATH = "src/main/resources/cloudformation/iam-template.yml";
     private static String stackName;
 
     public static void main(String[] args) {
@@ -51,7 +52,7 @@ public class CloudFormationDeployer {
         CreateStackRequest request = CreateStackRequest.builder()
                 .stackName(stackName)
                 .templateBody(templateBody)
-                .capabilities(Capability.CAPABILITY_NAMED_IAM)
+                .capabilities(Capability.CAPABILITY_NAMED_IAM, Capability.CAPABILITY_AUTO_EXPAND)
                 .build();
         
         CreateStackResponse response = cfClient.createStack(request);
@@ -67,7 +68,7 @@ public class CloudFormationDeployer {
         UpdateStackRequest request = UpdateStackRequest.builder()
                 .stackName(stackName)
                 .templateBody(templateBody)
-                .capabilities(Capability.CAPABILITY_NAMED_IAM)
+                .capabilities(Capability.CAPABILITY_NAMED_IAM, Capability.CAPABILITY_AUTO_EXPAND)
                 .build();
         
         try {
