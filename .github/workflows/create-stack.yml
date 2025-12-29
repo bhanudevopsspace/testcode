@@ -25,29 +25,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 17 (for Gradle runtime)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
-      - name: Ensure Gradle wrapper is available
+      - name: Ensure Gradle wrapper is executable
         run: |
           if [ -f ./gradlew ]; then
-            echo "Gradle wrapper found"
             chmod +x ./gradlew
+            echo "Gradle wrapper ready"
           else
-            echo "No gradle wrapper found. Installing system Gradle and creating wrapper"
-            sudo apt-get update -y
-            sudo apt-get install -y gradle
-            gradle wrapper --gradle-version 8.5
-            chmod +x ./gradlew
+            echo "ERROR: gradlew not found. Commit the Gradle wrapper to the repo."
+            exit 1
           fi
 
-      - name: Build (using Gradle wrapper)
+      - name: Compile classes (no packaging)
         run: |
-          echo "Building project with ./gradlew build"
-          ./gradlew --no-daemon build
+          ./gradlew --no-daemon clean classes
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -56,8 +53,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ github.event.inputs.aws_region }}
 
-      - name: Deploy CloudFormation stack with Gradle task
+      - name: Deploy CloudFormation stack
         run: |
           STACK_NAME="${{ github.event.inputs.stack_name }}"
-          echo "Deploying stack: $STACK_NAME"
+          echo "Deploying CloudFormation stack: $STACK_NAME"
           ./gradlew --no-daemon deployStack -PstackName="$STACK_NAME"
