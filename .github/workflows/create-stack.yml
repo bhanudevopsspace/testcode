@@ -1,0 +1,63 @@
+name: Create AWS CloudFormation Stack
+
+on:
+  workflow_dispatch:
+    inputs:
+      stack_name:
+        description: 'Name of the CloudFormation stack to create'
+        required: true
+        default: 'bhanu-techmologics-iam'
+      aws_region:
+        description: 'AWS region to deploy the stack'
+        required: false
+        default: 'us-east-1'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  create-stack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Ensure Gradle wrapper is available
+        run: |
+          if [ -f ./gradlew ]; then
+            echo "Gradle wrapper found"
+            chmod +x ./gradlew
+          else
+            echo "No gradle wrapper found. Installing system Gradle and creating wrapper"
+            sudo apt-get update -y
+            sudo apt-get install -y gradle
+            gradle wrapper --gradle-version 8.5
+            chmod +x ./gradlew
+          fi
+
+      - name: Build (using Gradle wrapper)
+        run: |
+          echo "Building project with ./gradlew build"
+          ./gradlew --no-daemon build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ github.event.inputs.aws_region }}
+
+      - name: Deploy CloudFormation stack with Gradle task
+        run: |
+          STACK_NAME="${{ github.event.inputs.stack_name }}"
+          echo "Deploying stack: $STACK_NAME"
+          ./gradlew --no-daemon deployStack -PstackName="$STACK_NAME"
