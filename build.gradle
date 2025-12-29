@@ -1,0 +1,68 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // AWS SDK for CloudFormation
+    implementation platform('software.amazon.awssdk:bom:2.20.0')
+    implementation 'software.amazon.awssdk:cloudformation'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-simple:2.0.7'
+}
+
+application {
+    mainClass = 'com.example.CloudFormationDeployer'
+}
+
+// Task to deploy CloudFormation stack
+task deployStack(type: JavaExec) {
+    group = 'aws'
+    description = 'Deploys CloudFormation stack to create IAM user with policy and role'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.example.CloudFormationDeployer'
+    if (project.hasProperty('stackName')) {
+        args = [project.property('stackName'), 'create']
+    } else {
+        args = ['sample-iam-stack', 'create']
+    }
+}
+
+// Task to update CloudFormation stack
+task updateStack(type: JavaExec) {
+    group = 'aws'
+    description = 'Updates the CloudFormation stack'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.example.CloudFormationDeployer'
+    if (project.hasProperty('stackName')) {
+        args = [project.property('stackName'), 'update']
+    } else {
+        args = ['sample-iam-stack', 'update']
+    }
+}
+
+// Task to delete CloudFormation stack
+task deleteStack(type: JavaExec) {
+    group = 'aws'
+    description = 'Deletes the CloudFormation stack'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.example.CloudFormationDeployer'
+    if (project.hasProperty('stackName')) {
+        args = [project.property('stackName'), 'delete']
+    } else {
+        args = ['sample-iam-stack', 'delete']
+    }
+}
